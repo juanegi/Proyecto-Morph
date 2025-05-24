@@ -16,26 +16,42 @@ modelo = load_model("modelo_emociones.h5", compile=False)
 emociones = ['Enojo', 'Disgusto', 'Miedo', 'Feliz', 'Triste', 'Sorpresa', 'Neutral']
 face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 
-def capturar_y_detectar():
-    nombre_archivo = 'foto_usuario.jpg'
-    camara = cv2.VideoCapture(0)
-    if not camara.isOpened():
-        messagebox.showerror("Error", "No se pudo acceder a la cámara.")
-        return
+# Estado de la cámara y frame actual
+camara = None
+frame_actual = None
 
-    ret, frame = camara.read()
-    camara.release()
+# Obtener tamaño de pantalla y calcular 80%
+root = tk.Tk()
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+root.destroy()
+win_w = int(screen_width * 0.8)
+win_h = int(screen_height * 0.8)
+img_w = int(win_h * 0.8)  # Imagen cuadrada, 80% del alto de la ventana
+img_h = img_w
 
-    if not ret:
-        messagebox.showerror("Error", "No se pudo capturar la imagen.")
-        return
+def actualizar_video():
+    global frame_actual
+    if camara:
+        ret, frame = camara.read()
+        if ret:
+            frame_actual = frame.copy()
+            img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(img).resize((img_w, img_h))
+            imgtk = ImageTk.PhotoImage(image=img)
+            label_imagen.imgtk = imgtk
+            label_imagen.configure(image=imgtk)
+        ventana.after(20, actualizar_video)
 
-    cv2.imwrite(nombre_archivo, frame)
+def tomar_captura():
+    global camara, frame_actual
+    if camara and frame_actual is not None:
+        nombre_archivo = 'foto_usuario.jpg'
+        cv2.imwrite(nombre_archivo, frame_actual)
+        mostrar_imagen(nombre_archivo)
+        procesar_imagen(nombre_archivo)
 
-    # Mostrar imagen en la interfaz
-    mostrar_imagen(nombre_archivo)
-
-    # Procesar imagen
+def procesar_imagen(nombre_archivo):
     imagen = cv2.imread(nombre_archivo)
     gris = cv2.cvtColor(imagen, cv2.COLOR_BGR2GRAY)
     rostros = face_cascade.detectMultiScale(gris, scaleFactor=1.3, minNeighbors=5)
@@ -62,47 +78,65 @@ def capturar_y_detectar():
         return
 
 def mostrar_imagen(ruta):
-    imagen = Image.open(ruta).resize((200, 200))
+    imagen = Image.open(ruta).resize((img_w, img_h))
     imagen_tk = ImageTk.PhotoImage(imagen)
     label_imagen.configure(image=imagen_tk)
     label_imagen.image = imagen_tk  # mantener referencia
 
-# Crear ventana
+# Crear ventana principal
 ventana = tk.Tk()
 ventana.title("Detección de Emociones")
-ventana.geometry("350x400")
-ventana.configure(bg="#e0e0e0")  # Fondo gris claro
+ventana.geometry(f"{win_w}x{win_h}")
+ventana.configure(bg="#e0e0e0")
 
-# Estilos minimalistas
+# Layout principal
+frame_principal = tk.Frame(ventana, bg="#e0e0e0")
+frame_principal.pack(fill="both", expand=True, padx=20, pady=20)
+
+# Frame izquierdo (imagen + botón)
+frame_izquierdo = tk.Frame(frame_principal, bg="#e0e0e0")
+frame_izquierdo.grid(row=0, column=0, sticky="n")
+
+label_imagen = tk.Label(frame_izquierdo, bg="#e0e0e0", width=img_w, height=img_h)
+label_imagen.pack(pady=(0, 20))
+
 estilo_boton = {
-    "bg": "#ff9800",         # Naranja
-    "fg": "#ffffff",         # Texto blanco
+    "bg": "#ff9800",
+    "fg": "#ffffff",
     "activebackground": "#e65100",
     "activeforeground": "#ffffff",
-    "font": ("Segoe UI", 11, "bold"),
+    "font": ("Segoe UI", 16, "bold"),
     "bd": 0,
     "relief": "flat",
     "cursor": "hand2",
     "highlightthickness": 0,
-    "padx": 10,
-    "pady": 8
+    "padx": 24,
+    "pady": 16
 }
+
+btn_ejecutar = tk.Button(frame_izquierdo, text="Tomar Captura", command=tomar_captura, **estilo_boton)
+btn_ejecutar.pack()
+
+# Frame derecho (resultados)
+frame_derecho = tk.Frame(frame_principal, bg="#e0e0e0")
+frame_derecho.grid(row=0, column=1, sticky="n", padx=(40, 0))
 
 estilo_label = {
     "bg": "#e0e0e0",
     "fg": "#333333"
 }
 
-btn_ejecutar = tk.Button(ventana, text="Capturar Foto y Detectar Emoción", command=capturar_y_detectar, **estilo_boton)
-btn_ejecutar.pack(pady=18)
+label_emocion = tk.Label(frame_derecho, text="", **estilo_label, font=("Segoe UI", 22, "bold"), anchor="w", justify="left", wraplength=int(win_w*0.3))
+label_emocion.pack(pady=(40, 30), fill="x")
 
-label_imagen = tk.Label(ventana, **estilo_label)
-label_imagen.pack(pady=10)
+label_personaje = tk.Label(frame_derecho, text="", **estilo_label, font=("Segoe UI", 15), anchor="w", justify="left", wraplength=int(win_w*0.3))
+label_personaje.pack(pady=10, fill="x")
 
-label_emocion = tk.Label(ventana, text="", **estilo_label, font=("Segoe UI", 12, "bold"))
-label_emocion.pack(pady=8)
-
-label_personaje = tk.Label(ventana, text="", **estilo_label, font=("Segoe UI", 10))
-label_personaje.pack(pady=8)
+# Iniciar cámara y mostrar video automáticamente
+camara = cv2.VideoCapture(0)
+if not camara.isOpened():
+    messagebox.showerror("Error", "No se pudo acceder a la cámara.")
+else:
+    actualizar_video()
 
 ventana.mainloop()
