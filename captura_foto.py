@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from tensorflow.keras.models import load_model
 import os
+from personajes import mostrar_info_personaje
 
 # Verificar existencia del modelo
 if not os.path.exists("modelo_emociones.h5"):
@@ -40,7 +41,8 @@ def capturar_y_detectar():
     rostros = face_cascade.detectMultiScale(gris, scaleFactor=1.3, minNeighbors=5)
 
     if len(rostros) == 0:
-        messagebox.showinfo("Resultado", "No se detectó ningún rostro.")
+        label_emocion.config(text="No se detectó ningún rostro.")
+        label_personaje.config(text="")
         return
 
     for (x, y, w, h) in rostros:
@@ -54,12 +56,13 @@ def capturar_y_detectar():
         emocion_idx = np.argmax(prediccion)
         emocion = emociones[emocion_idx]
 
-        messagebox.showinfo("Emoción Detectada", f"Emoción: {emocion}")
+        label_emocion.config(text=f"Emoción: {emocion}")
+        info_personaje = mostrar_info_personaje(emocion)
+        label_personaje.config(text=info_personaje)
         return
 
 def mostrar_imagen(ruta):
-    imagen = Image.open(ruta)
-    imagen = imagen.resize((200, 200))
+    imagen = Image.open(ruta).resize((200, 200))
     imagen_tk = ImageTk.PhotoImage(imagen)
     label_imagen.configure(image=imagen_tk)
     label_imagen.image = imagen_tk  # mantener referencia
@@ -67,12 +70,39 @@ def mostrar_imagen(ruta):
 # Crear ventana
 ventana = tk.Tk()
 ventana.title("Detección de Emociones")
-ventana.geometry("350x350")
+ventana.geometry("350x400")
+ventana.configure(bg="#e0e0e0")  # Fondo gris claro
 
-btn_ejecutar = tk.Button(ventana, text="Capturar Foto y Detectar Emoción", command=capturar_y_detectar)
-btn_ejecutar.pack(pady=10)
+# Estilos minimalistas
+estilo_boton = {
+    "bg": "#ff9800",         # Naranja
+    "fg": "#ffffff",         # Texto blanco
+    "activebackground": "#e65100",
+    "activeforeground": "#ffffff",
+    "font": ("Segoe UI", 11, "bold"),
+    "bd": 0,
+    "relief": "flat",
+    "cursor": "hand2",
+    "highlightthickness": 0,
+    "padx": 10,
+    "pady": 8
+}
 
-label_imagen = tk.Label(ventana)
+estilo_label = {
+    "bg": "#e0e0e0",
+    "fg": "#333333"
+}
+
+btn_ejecutar = tk.Button(ventana, text="Capturar Foto y Detectar Emoción", command=capturar_y_detectar, **estilo_boton)
+btn_ejecutar.pack(pady=18)
+
+label_imagen = tk.Label(ventana, **estilo_label)
 label_imagen.pack(pady=10)
+
+label_emocion = tk.Label(ventana, text="", **estilo_label, font=("Segoe UI", 12, "bold"))
+label_emocion.pack(pady=8)
+
+label_personaje = tk.Label(ventana, text="", **estilo_label, font=("Segoe UI", 10))
+label_personaje.pack(pady=8)
 
 ventana.mainloop()
