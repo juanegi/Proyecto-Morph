@@ -4,8 +4,6 @@ from torchvision import transforms
 from torchvision.models import efficientnet_b0
 import cv2
 from PIL import Image
-import numpy as np
-from detectar_emocion import detectar_emocion_desde_imagen
 
 EMOCIONES = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -33,7 +31,7 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 # Mapeo inglés a español
 MAPEO_EMOCIONES = {
     "angry": "Enojo",
-    "disgust": "Asco",
+    "disgust": "Disgusto",
     "fear": "Miedo",
     "happy": "Feliz",
     "sad": "Triste",
