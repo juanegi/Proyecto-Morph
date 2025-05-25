@@ -9,8 +9,7 @@ def mostrar_info_personaje(emocion_detectada):
         "Feliz": "alegria",
         "Triste": "tristeza",
         "Sorpresa": "sorpresa",
-        "Neutral": "neutral",      # Puedes asociar 'neutral' a algún grupo si lo deseas
-        "Desprecio": "desprecio"   # Por si acaso
+        "Neutral": "neutral"   # Por si acaso
     }
 
     emocion = mapeo_emociones.get(emocion_detectada, emocion_detectada).lower()
@@ -37,7 +36,7 @@ def mostrar_info_personaje(emocion_detectada):
                 "año": 1995,
                 "genero_visible": "Fantasía-aventura",
                 "emocion_asociada": "alegria"
-            },  # <-- ESTA COMA ES NECESARIA
+            }, 
 
             {
                 "nombre": "Dorothy Gale",
@@ -176,28 +175,28 @@ def mostrar_info_personaje(emocion_detectada):
                 "pelicula": "The Bunker",
                 "año": 1981,
                 "genero_visible": "Bélico histórico",
-                "emocion_asociada": "desprecio"
+                "emocion_asociada": "neutral"
             },
             {
                 "nombre": "Coronel Kurtz",
                 "pelicula": "Apocalypse Now",
                 "año": 1979,
                 "genero_visible": "Bélico psicológico",
-                "emocion_asociada": "desprecio"
+                "emocion_asociada": "neutral"
             },
             {
                 "nombre": "Gunnery Sgt. Hartman",
                 "pelicula": "Full Metal Jacket",
                 "año": 1987,
                 "genero_visible": "Bélico realista",
-                "emocion_asociada": "desprecio"
+                "emocion_asociada": "neutral"
             },
             {
                 "nombre": "Sargento Barnes",
                 "pelicula": "Platoon",
                 "año": 1986,
                 "genero_visible": "Bélico dramático",
-                "emocion_asociada": "desprecio"
+                "emocion_asociada": "neutral"
             }
         ],
 
@@ -207,7 +206,7 @@ def mostrar_info_personaje(emocion_detectada):
                 "pelicula": "Rebecca",
                 "año": 1940,
                 "genero_visible": "Suspenso psicológico",
-                "emocion_asociada": "desprecio"
+                "emocion_asociada": "neutral"
             }
         ],
 
