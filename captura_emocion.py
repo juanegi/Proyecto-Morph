@@ -10,6 +10,7 @@ from tkinter import messagebox
 from PIL import Image, ImageTk
 import os
 from personajes import mostrar_info_personaje
+from detectar_emocion import detectar_emocion_desde_imagen
 
 EMOCIONES = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -66,15 +67,17 @@ def detectar_emocion_desde_imagen(ruta_imagen):
         return emocion_es
     return "No se detectó ningún rostro."
 
-# TAMAÑO DE VENTANA
+# TAMAÑO DE VENTANA (pantalla completa)
 root = tk.Tk()
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 root.destroy()
-win_w = int(screen_width * 0.8)
-win_h = int(screen_height * 0.8)
-img_w = int(win_h * 1)
-img_h = img_w
+win_w = screen_width
+win_h = screen_height
+
+# Tamaño de la cámara reducido
+img_w = 480
+img_h = 360
 
 camara = None
 frame_actual = None
@@ -97,7 +100,7 @@ def tomar_captura():
     if camara and frame_actual is not None:
         ruta_foto = 'foto_usuario.jpg'
         cv2.imwrite(ruta_foto, frame_actual)
-        mostrar_imagen(ruta_foto)
+        mostrar_imagen_camara(ruta_foto)
         procesar_emocion(ruta_foto)
 
 def procesar_emocion(ruta):
@@ -105,15 +108,25 @@ def procesar_emocion(ruta):
     label_emocion.config(text=f"Emoción: {emocion_es}")
     if "rostro" in emocion_es or "cargar" in emocion_es:
         label_personaje.config(text="")
+        label_foto_capturada.config(image="")
+        label_foto_capturada.image = None
     else:
         info = mostrar_info_personaje(emocion_es)
         label_personaje.config(text=info)
+        mostrar_foto_capturada(ruta)
 
-def mostrar_imagen(ruta):
+def mostrar_imagen_camara(ruta):
     imagen = Image.open(ruta).resize((img_w, img_h))
     imagen_tk = ImageTk.PhotoImage(imagen)
     label_imagen.configure(image=imagen_tk)
     label_imagen.image = imagen_tk
+
+def mostrar_foto_capturada(ruta):
+    # Mostrar la foto capturada a la derecha, debajo de la info
+    imagen = Image.open(ruta).resize((320, 240))
+    imagen_tk = ImageTk.PhotoImage(imagen)
+    label_foto_capturada.configure(image=imagen_tk)
+    label_foto_capturada.image = imagen_tk
 
 # INTERFAZ TKINTER
 ventana = tk.Tk()
@@ -124,6 +137,7 @@ ventana.configure(bg="#e0e0e0")
 frame_principal = tk.Frame(ventana, bg="#e0e0e0")
 frame_principal.pack(fill="both", expand=True, padx=20, pady=20)
 
+# Frame izquierdo (cámara + botón)
 frame_izquierdo = tk.Frame(frame_principal, bg="#e0e0e0")
 frame_izquierdo.grid(row=0, column=0, sticky="n")
 
@@ -148,13 +162,17 @@ btn_captura = tk.Button(
 )
 btn_captura.pack()
 
+# Frame derecho (foto capturada arriba, info abajo)
 frame_derecho = tk.Frame(frame_principal, bg="#e0e0e0")
 frame_derecho.grid(row=0, column=1, sticky="n", padx=(40, 0))
+
+label_foto_capturada = tk.Label(frame_derecho, bg="#e0e0e0")
+label_foto_capturada.pack(pady=(30, 10))  # Foto arriba
 
 estilo_label = {"bg": "#e0e0e0", "fg": "#333333"}
 label_emocion = tk.Label(frame_derecho, text="", **estilo_label, font=("Segoe UI", 22, "bold"),
                          anchor="w", justify="left", wraplength=int(win_w * 0.3))
-label_emocion.pack(pady=(40, 30), fill="x")
+label_emocion.pack(pady=(10, 10), fill="x")
 
 label_personaje = tk.Label(frame_derecho, text="", **estilo_label, font=("Segoe UI", 15),
                            anchor="w", justify="left", wraplength=int(win_w * 0.3))
