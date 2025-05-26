@@ -7,6 +7,13 @@
 -  Interfaz gráfica con **Tkinter**
 -  Preparada para aplicar técnicas de estilizado artístico en etapas posteriores
 
+Debido a las restricciones de tamaño en GitHub, el modelo inswapper_128.onnx no está incluido en este repositorio.
+Puedes descargarlo manualmente desde el siguiente enlace de Google Drive:
+
+🔗 [Descargar inswapper_128.onnx](https://drive.google.com/file/d/1krOLgjW2tAPaqV-Bw4YALz0xT5zlb5HF/view)
+
+Una vez descargado, colócalo en la raíz del proyecto (junto a captura_emocion.py).
+
 ## Instalación 
 
 Antes de continuar, asegúrate de tener Anaconda instalado.
