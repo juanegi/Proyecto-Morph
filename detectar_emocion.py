@@ -1,3 +1,5 @@
+import os
+import sys
 import torch
 import torch.nn as nn
 from torchvision import transforms
@@ -14,7 +16,15 @@ model.classifier = nn.Sequential(
     nn.Dropout(p=0.4),
     nn.Linear(model.classifier[1].in_features, 7)
 )
-model.load_state_dict(torch.load('modelo_emociones/modelo_emociones_efficientnet.pth', map_location=DEVICE))
+
+def obtener_ruta_relativa(ruta):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, ruta)
+    return ruta
+
+ruta_modelo = obtener_ruta_relativa("modelo_emociones/modelo_emociones_efficientnet.pth")
+model.load_state_dict(torch.load(ruta_modelo, map_location=DEVICE))
+#model.load_state_dict(torch.load('modelo_emociones/modelo_emociones_efficientnet.pth', map_location=DEVICE))
 model.to(DEVICE)
 model.eval()
 

@@ -1,6 +1,6 @@
 # RetroMorph 🎭
 
-**RetroMorph** es una aplicación de escritorio desarrollada en Python con Tkinter que detecta la emoción de una persona a partir de una imagen y realiza un Face Swap con un personaje cinematográfico que refleja esa misma emoción.
+**RetroMorph** es una aplicación de escritorio desarrollada en Python con Tkinter que detecta la emoción de una persona a partir de una imagen, realiza un Face Swap con un personaje cinematográfico y permite aplicar un estilo artístico a la imagen final mediante técnicas de Neural Style Transfer (NST).
 
 -  Detección de emociones con **EfficientNet**
 -  Intercambio facial con **InsightFace** (`inswapper_128.onnx`)

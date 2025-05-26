@@ -1,4 +1,6 @@
 import os
+
+import estilo_nst
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
@@ -17,6 +19,10 @@ from personajes import mostrar_info_personaje
 from detectar_emocion import detectar_emocion_desde_imagen
 #from face_swap import realizar_faceswap 
 from face_swap_insight import realizar_faceswap_insightface
+from tkinter import ttk
+import threading
+from tkinter import filedialog
+
 
 EMOCIONES = ['angry', 'disgust', 'fear', 'happy', 'sad', 'surprise', 'neutral']
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -149,52 +155,71 @@ def procesar_emocion(ruta):
             print(" No se pudo generar el face swap.")
             mostrar_foto_capturada(ruta)
 
-
 def mostrar_foto_capturada(ruta):
     ancho_deseado = 500
     alto_deseado = 400
 
-    imagen = Image.open(ruta).resize((ancho_deseado, alto_deseado))
-    label_foto_capturada.config(width=ancho_deseado, height=alto_deseado)
+    try:
+        imagen = Image.open(ruta).resize((ancho_deseado, alto_deseado))
+        imagen_tk = ImageTk.PhotoImage(imagen)
 
-    imagen_tk = ImageTk.PhotoImage(imagen)
-    label_foto_capturada.configure(image=imagen_tk)
-    label_foto_capturada.image = imagen_tk
+        label_foto_capturada.config(image=imagen_tk)
+        label_foto_capturada.image = imagen_tk  # Conserva referencia
+        label_foto_capturada.config(width=ancho_deseado, height=alto_deseado)
+    except Exception as e:
+        print(f" Error al mostrar imagen: {e}")
 
-# INTERFAZ TKINTER
+def guardar_imagen_final():
+    ruta_guardar = filedialog.asksaveasfilename(
+        defaultextension=".jpg",
+        filetypes=[("JPEG", "*.jpg"), ("PNG", "*.png"), ("Todos los archivos", "*.*")]
+    )
+    if ruta_guardar:
+        try:
+            imagen = Image.open("resultado_estilizado.jpg")
+            imagen.save(ruta_guardar)
+            print(f"Imagen guardada en {ruta_guardar}")
+        except Exception as e:
+            print(f"Error al guardar la imagen: {e}")
+
+
+# Inicio de interfaz
 ventana = tk.Tk()
 ventana.title("RetroMorph")
-ventana.geometry(f"{win_w}x{win_h}")
-ventana.configure(bg="#121212")  # Fondo tipo Magicam
+ventana.geometry("1280x720")
+ventana.configure(bg="#121212")
 
 frame_principal = tk.Frame(ventana, bg="#121212")
 frame_principal.pack(fill="both", expand=True, padx=40, pady=30)
+frame_principal.grid_rowconfigure(0, minsize=80)
 
-# Título arriba izquierda
+frame_principal.grid_rowconfigure(0, weight=0)  # fila del título principal
+frame_principal.grid_rowconfigure(1, weight=0)  # fila del panel central
+frame_principal.grid_rowconfigure(2, weight=1)  # fila para los botones de estilo
 
-# Título estilo logo (simple, moderno, un solo color)
+# Título
 titulo = tk.Label(
     frame_principal,
     text="RetroMorph",
-    font=("Segoe UI", 26, "bold italic"),  # un poco más grande y con inclinación
-    fg="white",                            # blanco sólido
-    bg="#121212",                          # fondo tipo Magicam
+    font=("Segoe UI", 26, "bold italic"),
+    fg="white",
+    bg="#121212",
     anchor="w"
 )
-titulo.grid(row=0, column=0, sticky="nw", padx=10, pady=(0, 20), columnspan=2)
+titulo.grid(row=0, column=0, sticky="nw", padx=10, pady=(0, 20), columnspan=3)
+
+# Panel izquierdo - Cámara
 frame_izquierdo = tk.Frame(frame_principal, bg="#121212")
 frame_izquierdo.grid(row=1, column=0, sticky="n")
 
-# Imagen de cámara sin fondo extra
-label_imagen = tk.Label(frame_izquierdo, bg="#121212")  # Igual al fondo de la ventana
-label_imagen.pack(pady=(0, 20))  # Espacio para el botón debajo
+label_imagen = tk.Label(frame_izquierdo, bg="#121212", width=480, height=360)
+label_imagen.pack(pady=(0, 20))
 
-# Botón de captura con estilo
 btn_captura = tk.Button(
     frame_izquierdo,
     text="🎬 Tomar Captura",
     command=tomar_captura,
-    bg="#6c63ff",              
+    bg="#6c63ff",
     fg="white",
     activebackground="#574fcf",
     activeforeground="white",
@@ -206,45 +231,175 @@ btn_captura = tk.Button(
 )
 btn_captura.pack()
 
-# Frame derecho con fondo propio (panel completo)
-panel_ancho = int(win_w * 0.35)
-panel_alto = int(win_h * 100)  # puedes ajustar esto
+# Panel central - Imagen y textos
+frame_central = tk.Frame(frame_principal, bg="#1c1c1e", width=500, height=500)
+frame_central.grid(row=1, column=1, sticky="n", padx=40)
+frame_central.grid_propagate(False)
 
-frame_derecho = tk.Frame(frame_principal, bg="#1c1c1e", width=panel_ancho, height=panel_alto)
-frame_derecho.grid(row=1, column=1, sticky="nsew", padx=(40, 0))
-frame_derecho.grid_propagate(False)  # No dejar que se encoja
+label_foto_capturada = tk.Label(frame_central, bg="#1c1c1e", width=320, height=240)
+label_foto_capturada.pack(pady=(30, 20), padx=25)
 
 
-label_foto_capturada = tk.Label(
-    frame_derecho,
-    bg="#1c1c1e",  # mismo color del panel derecho para que se camufle
-    width=320,
-    height=240,
-    relief="flat",
-    bd=0,
-    highlightthickness=0
-)
-
-label_foto_capturada.pack(pady=(30, 20), padx=25) # Margenes
-
-# Texto emoción
-label_emocion = tk.Label(frame_derecho, text="", font=("Segoe UI", 18, "bold"),
-                         fg="white", bg="#1c1c1e", justify="left", anchor="w",
-                         wraplength=int(win_w * 0.3))
+label_emocion = tk.Label(frame_central, text="Emoción:", font=("Segoe UI", 18, "bold"),
+                         fg="white", bg="#1c1c1e", wraplength=460, anchor="w", justify="left")
 label_emocion.pack(pady=(0, 10), fill="x", padx=20)
 
-# Texto personaje
-label_personaje = tk.Label(frame_derecho, text="", font=("Segoe UI", 13),
-                           fg="#cccccc", bg="#1c1c1e", justify="left", anchor="w",
-                           wraplength=int(win_w * 0.3))
+label_personaje = tk.Label(frame_central, text="Personaje:", font=("Segoe UI", 13),
+                           fg="#cccccc", bg="#1c1c1e", wraplength=460, anchor="w", justify="left")
 label_personaje.pack(pady=(0, 20), fill="x", padx=20)
 
+# Panel derecho - Estilos (más grande y centrado)
+frame_estilos = tk.Frame(frame_principal, bg="#1c1c1e", width=300, height=500)
+frame_estilos.grid(row=1, column=2, sticky="n", padx=(20, 30), pady=(60, 0))
+frame_estilos.grid_propagate(False)
 
-# INICIAR CÁMARA
+label_estilos = tk.Label(
+    frame_principal,
+    text="Escoger estilo",
+    font=("Segoe UI", 14, "bold"),
+    fg="white",
+    bg="#121212",
+    anchor="w"
+)
+label_estilos.grid(row=1, column=2, sticky="n", padx=(0, 0), pady=(0, 120))
+
+# Barra de progreso centrada bajo el panel central
+progress_bar = ttk.Progressbar(frame_principal, mode="indeterminate", length=300)
+progress_bar.grid(row=2, column=1, pady=(20, 10))  # Centrado debajo del panel central
+progress_bar.grid_remove()
+
+def aplicar_estilo_desde_boton(ruta_estilo):
+    ruta_contenido = "resultado_faceswap.jpg"
+    salida_estilizada = "resultado_estilizado.jpg"
+
+    emocion_anterior = label_emocion.cget("text")
+    personaje_anterior = label_personaje.cget("text")
+
+    label_emocion.config(
+        text="Aplicando estilo...",
+        font=("Segoe UI", 12, "italic"),
+        fg="#cccccc",
+        anchor="center",
+        justify="center"
+    )
+    label_personaje.config(text="")
+    label_foto_capturada.config(image=None)
+    label_foto_capturada.image = None
+
+    progress_bar.grid(row=2, column=1, pady=(20, 10))
+    progress_bar.start()
+    ventana.update_idletasks()
+
+    def procesar():
+        try:
+            if ruta_estilo.startswith("feedforward_"):
+                estilo = ruta_estilo.split("_")[1]
+                modulo_path = f"estilos_feedforward.{estilo}.aplicar_estilo_{estilo}"
+                import importlib
+                modulo = importlib.import_module(modulo_path)
+                funcion = getattr(modulo, f"aplicar_estilo_{estilo}")
+                funcion(ruta_contenido, salida_estilizada)
+            else:
+                from estilo_nst import aplicar_estilizado_nst
+                aplicar_estilizado_nst(ruta_contenido, ruta_estilo, salida_estilizada)
+
+            if os.path.exists(salida_estilizada):
+                ventana.after(0, lambda: mostrar_foto_capturada(salida_estilizada))
+                ventana.after(0, lambda: label_emocion.config(
+                    text=emocion_anterior,
+                    font=("Segoe UI", 18, "bold"),
+                    anchor="w",
+                    justify="left"
+                ))
+                ventana.after(0, lambda: label_personaje.config(text=personaje_anterior))
+                ventana.after(0, lambda: boton_guardar.pack(pady=(10, 20), anchor="w", padx=12))
+            else:
+                ventana.after(0, lambda: label_emocion.config(text="No se pudo aplicar el estilo."))
+        except Exception as e:
+            print(f" Error al aplicar el estilo: {e}")
+            import traceback
+            traceback.print_exc()
+            ventana.after(0, lambda: label_emocion.config(text="Error al aplicar el estilo."))
+        finally:
+            ventana.after(0, lambda: progress_bar.stop())
+            ventana.after(0, lambda: progress_bar.grid_remove())
+
+    threading.Thread(target=procesar, daemon=True).start()
+
+
+estilos = [
+    ("Fantasía", "estilos/fantasia.jpg"),
+    ("Terror", "estilos/terror.png"),
+    ("Aventura", "estilos/aventura.jpg"),
+    ("Drama", "estilos/drama.jpg"),
+    ("Crimen", "estilos/crimen.png"),
+    ("Comedia", "estilos/comedia.png")]
+
+
+# Contenedor centrado para los botones
+contenedor_botones = tk.Frame(frame_estilos, bg="#1c1c1e")
+contenedor_botones.pack(expand=True)
+
+for i, (nombre, ruta) in enumerate(estilos):
+    boton = tk.Button(
+        contenedor_botones,
+        text=nombre,
+        command=lambda r=ruta: aplicar_estilo_desde_boton(r),
+        bg="#6c63ff",
+        fg="white",
+        activebackground="#574fcf",
+        activeforeground="white",
+        font=("Segoe UI", 10, "bold"),
+        width=12,
+        height=2,
+        bd=0,
+        relief="flat",
+        cursor="hand2"
+    )
+    fila = i // 2
+    columna = i % 2
+    boton.grid(row=fila, column=columna, padx=12, pady=10)
+
+
+# 2. BOTÓN DE GUARDAR - ¡fuera del contenedor!
+# Crear el botón pero NO lo mostramos todavía
+boton_guardar = tk.Button(
+    frame_estilos,
+    text="💾",
+    command=guardar_imagen_final,
+    bg="#574fcf",
+    fg="#cccccc",
+    activebackground="#1c1c1e",
+    activeforeground="white",
+    font=("Segoe UI", 10, "bold"),
+    bd=0,
+    relief="flat",
+    cursor="hand2"
+)
+
+# Ocultarlo al inicio
+boton_guardar.pack_forget()
+
+
+# INICIAR CÁMARA (se asegura de iniciar después de crear todo)
 camara = cv2.VideoCapture(0)
-if not camara.isOpened():
-    messagebox.showerror("Error", "No se pudo acceder a la cámara.")
-else:
-    actualizar_video()
 
+def iniciar_video_si_camara_funciona():
+    if camara.isOpened():
+        actualizar_video()
+    else:
+        messagebox.showerror("Error", "No se pudo acceder a la cámara.")
+
+# Forzar cierre seguro
+def cerrar_ventana():
+    try:
+        if camara and camara.isOpened():
+            camara.release()
+        ventana.destroy()
+    except Exception as e:
+        print(f"Error al cerrar: {e}")
+        os._exit(0)
+
+ventana.after(100, iniciar_video_si_camara_funciona)
+ventana.protocol("WM_DELETE_WINDOW", cerrar_ventana)
 ventana.mainloop()

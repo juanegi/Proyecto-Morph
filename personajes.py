@@ -72,7 +72,7 @@ def mostrar_info_personaje(emocion_detectada):
                 "año": 1994,
                 "genero_visible": "Drama histórico",
                 "emocion_asociada": "tristeza",
-                "imagen": "personajes_img/forrest_gump.jpg"
+                "imagen": "personajes_img/forrest.png"
             },
             {
                 "nombre": "Erik (El Fantasma)",
@@ -114,7 +114,7 @@ def mostrar_info_personaje(emocion_detectada):
                 "año": 2000,
                 "genero_visible": "Crimen psicológico",
                 "emocion_asociada": "asco",
-                "imagen": "personajes_img/patrick.jpg"
+                "imagen": "personajes_img/patrick.png"
             },
             {
                 "nombre": "Alex DeLarge",
@@ -164,7 +164,7 @@ def mostrar_info_personaje(emocion_detectada):
                 "año": 1982,
                 "genero_visible": "Ciencia ficción familiar",
                 "emocion_asociada": "sorpresa",
-                "imagen": "personajes_img/elliott.jpg"
+                "imagen": "personajes_img/elliott.png"
             },
             {
                 "nombre": "Kevin McCallister",
@@ -172,7 +172,7 @@ def mostrar_info_personaje(emocion_detectada):
                 "año": 1990,
                 "genero_visible": "Comedia-aventura",
                 "emocion_asociada": "sorpresa",
-                "imagen": "personajes_img/kevin.jpg"
+                "imagen": "personajes_img/kevin.png"
             },
             {
                 "nombre": "George McFly",
@@ -180,7 +180,7 @@ def mostrar_info_personaje(emocion_detectada):
                 "año": 1985,
                 "genero_visible": "Ciencia ficción y aventura",
                 "emocion_asociada": "sorpresa",
-                "imagen": "personajes_img/george.jpg"
+                "imagen": "personajes_img/george.png"
             }
         ],
         "Multigénero": [
@@ -235,12 +235,12 @@ def mostrar_info_personaje(emocion_detectada):
                 "imagen": "personajes_img/chucky.jpg"
             },
             {
-                "nombre": "Freddy Krueger",
-                "pelicula": "A Nightmare on Elm Street / Pesadilla en la calle Elm",
-                "año": 1984,
-                "genero_visible": "Terror sobrenatural",
+                "nombre": "Christiane Génessier",
+                "pelicula": "Les Yeux sans visage / Los ojos sin rostro",
+                "año": 1960,
+                "genero_visible": "Terror y drama",
                 "emocion_asociada": "enojo",
-                "imagen": "personajes_img/freddy.jpg"
+                "imagen": "personajes_img/eyes.jpg"
             },
             {
                 "nombre": "Regan MacNeil",
